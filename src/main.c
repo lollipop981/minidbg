@@ -21,9 +21,12 @@ int main(int argc, char** argv)
             int status;
 
             waitpid(child_pid, &status, 0);
+            
+            handle_command("help", child_pid);
+            handle_command("regs", child_pid);
             ptrace(PTRACE_CONT, child_pid, NULL, NULL);
 
-
+            
             // while (WIFSTOPPED(child_pid))
             // {
             //         struct user_regs_struct regs;

@@ -2,6 +2,7 @@
 #define __COMMANDS_H__
 
 #include <sys/types.h>
+#include <stdlib.h>
 
 typedef struct command_handler {
     char *prefix;
@@ -9,6 +10,7 @@ typedef struct command_handler {
     char *help;
 } command_handler_t;
 
-void handle_command(char *command, pid_t pid);
+int handle_command(char *cmd, pid_t pid);
+int handle_help_command(char *cmd, pid_t pid);
 
 #endif // __COMMANDS_H__
