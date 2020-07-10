@@ -5,15 +5,15 @@
 #include <sys/user.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <signal.h>
 
+#include "commands.h"
 
 int main(int argc, char** argv)
 {
         pid_t child_pid;
         char* debugee = argv[1];
+             
         child_pid = fork();
-
         if (child_pid == 0) {
             ptrace(PTRACE_TRACEME, 0, 0, 0);
             execlp(debugee, debugee, NULL);
