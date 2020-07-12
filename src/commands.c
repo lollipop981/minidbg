@@ -3,10 +3,12 @@
 
 #include "commands.h"
 #include "regs.h"
+#include "mem.h"
 
 command_handler_t COMMAND_HANDLERS[] = {
     {"help", handle_help_command, "Print Help."},
     {"reg", handle_regs_command, "Print information about registers."},
+    {"mem", handle_memory_read_command, "Print Memory from the debugee. Usage: mem {addr} {count}."},
     
 };
 size_t COMMAND_HANDLER_COUNT = sizeof(COMMAND_HANDLERS) / sizeof(command_handler_t);
