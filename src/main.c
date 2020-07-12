@@ -23,21 +23,21 @@ int main(int argc, char** argv)
             execlp(debugee, debugee, NULL);
         } else if (child_pid > 0) {
             int status;
-
             waitpid(child_pid, &status, 0);
             
-            handle_command("help", child_pid);
-            handle_command("regs", child_pid);
+            printf("rmdbg >>> ");
+            fgets(cmd, CMD_SIZE, stdin);
 
-            do {
+            while (0 != strcmp("q\n", cmd)) {
+                if (0 != strcmp("\n", cmd)) {
+                    handle_command(cmd, child_pid);
+                }
                 memset(cmd, '\0', CMD_SIZE);
                 printf("rmdbg >>> ");
                 fgets(cmd, CMD_SIZE, stdin);
-                handle_command(cmd, child_pid);
 
-            } while (0 == strcmp("q\n", cmd));
-            
-            
+            } ;
+  
             ptrace(PTRACE_CONT, child_pid, NULL, NULL);
 
         }

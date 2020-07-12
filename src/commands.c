@@ -17,6 +17,11 @@ int handle_command(char *cmd, pid_t pid){
     char *prefix = NULL;
     size_t len = 0;
 
+    // remove new line
+    if (cmd[strlen(cmd) - 1] == '\n') {
+        cmd[strlen(cmd) - 1] = '\0';
+    }
+
     for (int i = 0; i < COMMAND_HANDLER_COUNT; i++) {
         prefix = COMMAND_HANDLERS[i].prefix;
         if (strlen(prefix) <= strlen(cmd)) {
@@ -32,6 +37,7 @@ int handle_command(char *cmd, pid_t pid){
         }
         
     }
+
 
     printf("Undefined command: \"%s\". Try \"help\"\n", cmd);
 }

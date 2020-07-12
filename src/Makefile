@@ -1,6 +1,6 @@
 IDIR =../include
 CC=gcc
-CFLAGS=-I$(IDIR) -D_GNU_SOURCE
+CFLAGS=-I$(IDIR) -D_GNU_SOURCE -ggdb
 
 ODIR=../obj
 LDIR =../lib
