@@ -24,18 +24,15 @@ int handle_command(char *cmd, pid_t pid){
 
     for (int i = 0; i < COMMAND_HANDLER_COUNT; i++) {
         prefix = COMMAND_HANDLERS[i].prefix;
-        if (strlen(prefix) <= strlen(cmd)) {
-            if (0 == memcmp(cmd, prefix, strlen(prefix))) {
-                // send only the rest of the cmd.
-                cmd += strlen(prefix);
-                while (*cmd == ' ') {
-                    cmd++;
-                }
-
-                return COMMAND_HANDLERS[i].handler(cmd, pid);
+        if (0 == memcmp(cmd, prefix, strlen(prefix))) {
+            // send only the rest of the cmd.
+            cmd += strlen(prefix);
+            while (*cmd == ' ') {
+                cmd++;
             }
+
+            return COMMAND_HANDLERS[i].handler(cmd, pid);
         }
-        
     }
 
 
