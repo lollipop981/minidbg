@@ -1,6 +1,6 @@
 IDIR =../include
 CC=gcc
-CFLAGS=-I$(IDIR) 
+CFLAGS=-I$(IDIR) -D_GNU_SOURCE
 
 ODIR=../obj
 LDIR =../lib
@@ -10,7 +10,7 @@ LIBS=-lm
 _DEPS = 
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = main.o regs.o commands.o
+_OBJ = main.o regs.o commands.o utils.o mem.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.c $(DEPS)
