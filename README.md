@@ -1,10 +1,10 @@
 "# rm_dbg" 
 
-- write main loop to get command and run a function
-- write helper functions to print long number of bytes, number in hex
-- write dummy program to debug
+[+] write main loop to get command and run a function
+[+] write helper functions to print long number of bytes, number in hex
+[+] write dummy program to debug
 
-- write function to get regs - matar
+[+] write function to get regs - matar
 - write function to pause pid - roey
 - write function to continue pid
 
