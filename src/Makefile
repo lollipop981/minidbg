@@ -5,7 +5,7 @@ CFLAGS=-I$(IDIR) -D_GNU_SOURCE -ggdb
 ODIR=../obj
 LDIR =../lib
 
-LIBS=-lm
+LIBS=/usr/local/lib/libZydis.a
 
 _DEPS = 
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
