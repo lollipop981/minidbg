@@ -10,7 +10,7 @@ LIBS=/usr/local/lib/libZydis.a
 _DEPS = 
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = main.o regs.o commands.o utils.o mem.o
+_OBJ = main.o regs.o commands.o utils.o mem.o disassembly.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.c $(DEPS)

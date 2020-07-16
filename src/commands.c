@@ -5,6 +5,7 @@
 #include "commands.h"
 #include "regs.h"
 #include "mem.h"
+#include "disassembly.h"
 
 command_handler_t COMMAND_HANDLERS[] = {
     {"help", handle_help_command, "Print Help."},
@@ -12,6 +13,7 @@ command_handler_t COMMAND_HANDLERS[] = {
     {"mem", handle_memory_read_command, "Print Memory from the debugee. Usage: mem {addr} {count}."},
     {"!", handle_shell_command, "Run a shell command."},
     {"maps", handle_maps_command, "Show memory maps of process as shown in /proc/{pid}/maps."},
+    {"disas", handle_disassembly_command, "Show disassembly of code about to be executed."},
     
 };
 size_t COMMAND_HANDLER_COUNT = sizeof(COMMAND_HANDLERS) / sizeof(command_handler_t);
