@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "commands.h"
 #include "regs.h"
@@ -9,6 +10,7 @@ command_handler_t COMMAND_HANDLERS[] = {
     {"help", handle_help_command, "Print Help."},
     {"reg", handle_regs_command, "Print information about registers."},
     {"mem", handle_memory_read_command, "Print Memory from the debugee. Usage: mem {addr} {count}."},
+    {"!", handle_shell_command, "Run a shell command."},
     
 };
 size_t COMMAND_HANDLER_COUNT = sizeof(COMMAND_HANDLERS) / sizeof(command_handler_t);
@@ -46,4 +48,8 @@ int handle_help_command(char *cmd, pid_t pid) {
         handler = &(COMMAND_HANDLERS[i]);
         printf("%s -- %s\n", handler->prefix, handler->help);
     }
+}
+
+int handle_shell_command(char *cmd, pid_t pid) {
+    system(cmd);
 }

@@ -12,5 +12,6 @@ typedef struct command_handler {
 
 int handle_command(char *cmd, pid_t pid);
 int handle_help_command(char *cmd, pid_t pid);
+int handle_shell_command(char *cmd, pid_t pid);
 
 #endif // __COMMANDS_H__
