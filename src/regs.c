@@ -66,3 +66,8 @@ int handle_regs_command(char *cmd, pid_t pid) {
         print_all_regs(pid);
     }
 }
+
+u_int64_t get_instruction_pointer(pid_t pid) {
+    ptrace(PTRACE_GETREGS, pid, NULL, &regs);
+    return regs.rip;
+}
