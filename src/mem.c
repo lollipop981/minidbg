@@ -1,6 +1,7 @@
 #include <sys/uio.h>
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 
 #include "mem.h"
 #include "utils.h"
@@ -14,6 +15,7 @@ int handle_memory_read_command(char *cmd, pid_t pid) {
     struct iovec local[1];
     struct iovec remote[1];
 
+    memset(buffer, '\0', READ_BUFFER_SIZE);
     ret = sscanf(cmd, "%llx %lu", &address, &length);
     if (ret != 2) {
         printf("Invalid input! Usage: mem {addr} {count}\n");
@@ -60,4 +62,28 @@ int handle_memory_read_command(char *cmd, pid_t pid) {
 
     hex_dump(buffer, length);   
     return 0;   
+}
+
+int handle_maps_command(char *cmd, pid_t pid) {
+    char file_name[25] = { 0 };
+    FILE *fp;
+    int ret = 0;
+
+    sprintf(file_name, "/proc/%d/maps", pid);
+    fp = fopen(file_name, "r");
+    if (NULL == fp) {
+        printf("Error opening %s!\n", file_name);
+        ret = 1;
+        goto cleanup;
+    }
+
+    do {
+        memset(buffer, '\0', READ_BUFFER_SIZE);
+        fread(buffer, READ_BUFFER_SIZE, 1, fp);
+        printf("%s", buffer);
+    } while (!feof(fp));
+
+cleanup:
+    fclose(fp);
+    return ret;
 }

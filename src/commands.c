@@ -11,6 +11,7 @@ command_handler_t COMMAND_HANDLERS[] = {
     {"reg", handle_regs_command, "Print information about registers."},
     {"mem", handle_memory_read_command, "Print Memory from the debugee. Usage: mem {addr} {count}."},
     {"!", handle_shell_command, "Run a shell command."},
+    {"maps", handle_maps_command, "Show memory maps of process as shown in /proc/{pid}/maps."},
     
 };
 size_t COMMAND_HANDLER_COUNT = sizeof(COMMAND_HANDLERS) / sizeof(command_handler_t);
