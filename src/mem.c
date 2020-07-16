@@ -6,30 +6,18 @@
 #include "mem.h"
 #include "utils.h"
 
-char buffer[READ_BUFFER_SIZE] = { 0 };
+unsigned char buffer[READ_BUFFER_SIZE] = { 0 };
 
-int handle_memory_read_command(char *cmd, pid_t pid) {
+int remote_memory_read(pid_t pid, long long unsigned address, size_t length, unsigned char *buffer, size_t buffer_size) {
     int ret = 0;
-    long long unsigned address = 0;
-    size_t length = 0;
     struct iovec local[1];
     struct iovec remote[1];
 
-    memset(buffer, '\0', READ_BUFFER_SIZE);
-    ret = sscanf(cmd, "%llx %lu", &address, &length);
-    if (ret != 2) {
-        printf("Invalid input! Usage: mem {addr} {count}\n");
-    }
-
-    if (length > READ_BUFFER_SIZE) {
-        printf("Max allowed number of bytes to read is %u.\n", READ_BUFFER_SIZE);
-    }
-
-    local[0].iov_base = &buffer;
-    local[0].iov_len = READ_BUFFER_SIZE;
+    local[0].iov_base = buffer;
+    local[0].iov_len = buffer_size;
     remote[0].iov_base = (void *) address;
     remote[0].iov_len = length;
-    
+
     ret = process_vm_readv(pid, local, 1, remote, 1, 0);
     if (ret < 0) {
         printf("Error! ");
@@ -57,6 +45,29 @@ int handle_memory_read_command(char *cmd, pid_t pid) {
             break;
         }
 
+        return 1;
+    }
+    return 0;
+}
+
+int handle_memory_read_command(char *cmd, pid_t pid) {
+    int ret = 0;
+    long long unsigned address = 0;
+    size_t length = 0;
+    
+
+    memset(buffer, '\0', READ_BUFFER_SIZE);
+    ret = sscanf(cmd, "%llx %lu", &address, &length);
+    if (ret != 2) {
+        printf("Invalid input! Usage: mem {addr} {count}\n");
+    }
+
+    if (length > READ_BUFFER_SIZE) {
+        printf("Max allowed number of bytes to read is %u.\n", READ_BUFFER_SIZE);
+    }
+
+    ret = remote_memory_read(pid, address, length, buffer, READ_BUFFER_SIZE);
+    if (ret > 0) {
         return 1;
     }
 

@@ -5,6 +5,7 @@
 
 #define READ_BUFFER_SIZE (4096)
 
+int remote_memory_read(pid_t pid, long long unsigned address, size_t length, unsigned char *buffer, size_t buffer_size);
 int handle_memory_read_command(char *cmd, pid_t pid);
 int handle_maps_command(char *cmd, pid_t pid);
 
