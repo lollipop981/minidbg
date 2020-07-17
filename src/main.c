@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
     pid_t child_pid;
     char* debugee = argv[1];
     char cmd[CMD_SIZE] = { 0 };
-            
+
     child_pid = fork();
     if (child_pid == 0) {
         ptrace(PTRACE_TRACEME, 0, 0, 0);

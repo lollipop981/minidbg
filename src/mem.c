@@ -21,8 +21,7 @@ int remote_memory_read(pid_t pid, long long unsigned address, size_t length, uns
     ret = process_vm_readv(pid, local, 1, remote, 1, 0);
     if (ret < 0) {
         printf("Error! ");
-        switch (errno)
-        {
+        switch (errno) {
         case EFAULT:
             printf("The memory is outside the accessible address space.\n");
             /* code */
