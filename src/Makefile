@@ -5,12 +5,12 @@ CFLAGS=-I$(IDIR) -D_GNU_SOURCE -ggdb -pedantic-errors
 ODIR=../obj
 LDIR =../lib
 
-LIBS=/usr/local/lib/libZydis.a
+LIBS=/usr/local/lib/libZydis.a -l elf
 
 _DEPS = 
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = main.o regs.o commands.o utils.o mem.o disassembly.o
+_OBJ = main.o regs.o commands.o utils.o mem.o disassembly.o symbols.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.c $(DEPS)
