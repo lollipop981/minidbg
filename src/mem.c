@@ -2,11 +2,12 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include "mem.h"
 #include "utils.h"
 
-unsigned char buffer[READ_BUFFER_SIZE] = { 0 };
+unsigned char buffer[READ_BUFFER_SIZE + 1] = { 0 };
 
 int remote_memory_read(pid_t pid, long long unsigned address, size_t length, unsigned char *buffer, size_t buffer_size) {
     int ret = 0;
@@ -92,6 +93,52 @@ int handle_maps_command(char *cmd, pid_t pid) {
         fread(buffer, READ_BUFFER_SIZE, 1, fp);
         printf("%s", buffer);
     } while (!feof(fp));
+
+cleanup:
+    fclose(fp);
+    return ret;
+}
+
+int get_min_executable_address(pid_t pid, long unsigned *address) {
+    char file_name[25] = { 0 };
+    FILE *fp;
+    int ret = 0;
+    long unsigned min_address = 0;
+    long unsigned max_address = 0;
+    char permissions[10] = { 0 };
+    long unsigned offset = 0;
+    unsigned dev_major = 0;
+    unsigned dev_minor = 0;
+    unsigned inode = 0;
+    char exec_path[MAX_PATH + 1] = { 0 };
+
+    sprintf(file_name, "/proc/%d/maps", pid);
+    fp = fopen(file_name, "r");
+    if (NULL == fp) {
+        printf("Error opening %s!\n", file_name);
+        ret = 1;
+        goto cleanup;
+    }
+
+    do {
+        ret = fscanf(fp, "%"PRIx64"-%"PRIx64" %s %"PRIx64" %x:%x %u %s\n",
+                &min_address, &max_address, permissions, &offset, &dev_major, &dev_minor, &inode, exec_path);
+        if (ret < 8) {
+            printf("Error parsing %s\n", file_name);
+            ret = 1;
+            goto cleanup;
+        } else if (strchr(permissions, 'x') != NULL) {
+            // found executable address
+            *address = min_address;
+            ret = 0;
+            goto cleanup;
+        }
+        
+        
+    } while (!feof(fp));
+
+    // executable address not found.   
+    ret = 1;
 
 cleanup:
     fclose(fp);
