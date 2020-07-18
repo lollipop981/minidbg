@@ -5,8 +5,9 @@
 #include "disassembly.h"
 #include "mem.h"
 #include "regs.h"
+#include "symbols.h"
 
-int handle_disassembly_command(char *cmd, pid_t pid) {
+int disassemble_at_address(pid_t pid, uint64_t start_address) {
     ZyanU8 memory[MEMORY_READ_SIZE] = { 0 };
     ZyanU64 current_address = 0;
     ZyanU64 runtime_address = 0;
@@ -16,10 +17,11 @@ int handle_disassembly_command(char *cmd, pid_t pid) {
     char buffer[INSTRUCTION_BUFFER_SIZE];
 
     runtime_address = get_instruction_pointer(pid);
-    current_address = runtime_address;
+    current_address = start_address;
     
     if (remote_memory_read(pid, current_address, MEMORY_READ_SIZE, memory, MEMORY_READ_SIZE)) {
         printf("Failed reading memory at address %lx\n", current_address);
+        return 1;
     }
     
     // Initialize decoder context
@@ -52,4 +54,19 @@ int handle_disassembly_command(char *cmd, pid_t pid) {
         current_address += instruction.length;
     }
     return 0;
+}
+
+int handle_disassembly_command(char *cmd, pid_t pid) {
+    uint64_t disas_address = 0;
+    
+    if (*cmd != '\0') {
+        if (get_symbol_address(cmd, pid, &disas_address)) {
+            printf("Failed to find symbol: %s\n", cmd);
+            return 1;
+        }
+    } else {
+        disas_address = get_instruction_pointer(pid);
+    }
+
+    return disassemble_at_address(pid, disas_address);
 }

@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "commands.h"
+#include "symbols.h"
 
 #define CMD_SIZE (400)
 
@@ -22,6 +23,7 @@ int main(int argc, char** argv) {
         execlp(debugee, debugee, NULL);
     } else if (child_pid > 0) {
         int status;
+        syms_init(debugee);
         waitpid(child_pid, &status, 0);
 
         printf("rmdbg >>> ");
@@ -35,7 +37,7 @@ int main(int argc, char** argv) {
             printf("rmdbg >>> ");
             fgets(cmd, CMD_SIZE, stdin);
 
-        } ;
+        }
 
         ptrace(PTRACE_CONT, child_pid, NULL, NULL);
 
