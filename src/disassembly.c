@@ -59,13 +59,13 @@ int disassemble_at_address(pid_t pid, uint64_t start_address) {
 int handle_disassembly_command(char *cmd, pid_t pid) {
     uint64_t disas_address = 0;
     
-    if (*cmd != '\0') {
-        if (get_symbol_address(cmd, pid, &disas_address)) {
-            printf("Failed to find symbol: %s\n", cmd);
+    if (*cmd == '\0') {
+        disas_address = get_instruction_pointer(pid);
+    } else if (sscanf(cmd, "0x%lx", &disas_address) != 1) {
+        if (get_symbol_address(cmd, pid, &disas_address) != 0) {
+            printf("Failed to parse symbol or address: %s\n", cmd);
             return 1;
         }
-    } else {
-        disas_address = get_instruction_pointer(pid);
     }
 
     return disassemble_at_address(pid, disas_address);
