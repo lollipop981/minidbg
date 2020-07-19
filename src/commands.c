@@ -6,15 +6,16 @@
 #include "regs.h"
 #include "mem.h"
 #include "disassembly.h"
+#include "breakpoints.h"
 
 command_handler_t COMMAND_HANDLERS[] = {
     {"help", handle_help_command, "Print Help."},
     {"reg", handle_regs_command, "Print information about registers."},
-    {"mem", handle_memory_read_command, "Print Memory from the debugee. Usage: mem {addr} {count}."},
+    {"mem", handle_memory_read_command, "Print Memory from the debugee. Usage: mem {address} {count}."},
     {"!", handle_shell_command, "Run a shell command."},
     {"maps", handle_maps_command, "Show memory maps of process as shown in /proc/{pid}/maps."},
     {"disas", handle_disassembly_command, "Show disassembly of code about to be executed."},
-    
+    {"br", handle_breakpoint_command, "Show all breakpoints or set a new breakpoint. Usage: breakpoint {address}."},
 };
 size_t COMMAND_HANDLER_COUNT = sizeof(COMMAND_HANDLERS) / sizeof(command_handler_t);
 
