@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <string.h>
 #include <inttypes.h>
+#include <sys/ptrace.h>
 
 #include "mem.h"
 #include "utils.h"
@@ -143,4 +144,8 @@ int get_min_executable_address(pid_t pid, long unsigned *address) {
 cleanup:
     fclose(fp);
     return ret;
+}
+
+int poke_data(pid_t pid, uint64_t address, char data) {
+    ptrace(PTRACE_POKEDATA, pid, address, data);
 }

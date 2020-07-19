@@ -10,5 +10,6 @@ int remote_memory_read(pid_t pid, long long unsigned address, size_t length, uns
 int handle_memory_read_command(char *cmd, pid_t pid);
 int handle_maps_command(char *cmd, pid_t pid);
 int get_min_executable_address(pid_t pid, long unsigned *address);
+int poke_data(pid_t pid, uint64_t address, char data);
 
 #endif // __MEM_H__
