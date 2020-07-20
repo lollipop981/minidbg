@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <string.h>
 #include <inttypes.h>
+#include <unistd.h>
 
 #include "mem.h"
 #include "utils.h"
@@ -82,8 +83,9 @@ status handle_maps_command(char *cmd, pid_t pid) {
     int ret = NO_ERROR;
 
     sprintf(file_name, "/proc/%d/maps", pid);
-    fp = fopen(file_name, "r");
-    if (NULL == fp) {
+
+    if ((access(file_name, R_OK) == -1) || 
+        ((fp = fopen(file_name, "r")) == NULL)) {
         printf("Error opening %s!\n", file_name);
         ret = ERROR;
         goto cleanup;
@@ -114,8 +116,9 @@ status get_min_executable_address(pid_t pid, long unsigned *address) {
     char exec_path[MAX_PATH + 1] = { 0 };
 
     sprintf(file_name, "/proc/%d/maps", pid);
-    fp = fopen(file_name, "r");
-    if (NULL == fp) {
+
+    if ((access(file_name, R_OK) == -1) || 
+        ((fp = fopen(file_name, "r")) == NULL)) {
         printf("Error opening %s!\n", file_name);
         ret = ERROR;
         goto cleanup;
