@@ -22,6 +22,7 @@ status list_breakpoints() {
     breakpoint_t *current = NULL;
 
     do {
+        counter++;
         current = br->data;
         printf("br %u: 0x%lx opcode: %02X enabled: %u\n", counter, current->address, current->opcode, current->is_enabled);
     } while ((br = g_list_next(br)) != NULL);
@@ -98,13 +99,13 @@ status continue_with_breakpoint(pid_t pid) {
     GList *breakpoints = g_breakpoints;
     breakpoint_t *current_breakpoint;
     
-
-    do {
+    while (breakpoints != NULL) {
         current_breakpoint = breakpoints->data;
         if (current_breakpoint->address == address) {
             break;
         }
-    } while ((breakpoints = g_list_next(breakpoints)) != NULL);
+        breakpoints = g_list_next(breakpoints);
+    }
     
     if (breakpoints == NULL) {
         printf("Couldn't find breakpoint at 0x%lx\n", address);
