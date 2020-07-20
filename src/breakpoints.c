@@ -2,11 +2,14 @@
 #include <stdio.h>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
+#include <errno.h>
 
 #include "breakpoints.h"
 #include "mem.h"
+#include "regs.h"
 
 GList *g_breakpoints = NULL;
+int reached_breakpoint = FALSE;
 
 status list_breakpoints() {
     if (g_breakpoints == NULL) {
@@ -26,23 +29,38 @@ status list_breakpoints() {
     return NO_ERROR;
 }
 
-status set_breakpoint(pid_t pid, uint64_t address) {
-    unsigned char opcode;
+status replace_byte(pid_t pid, uint64_t address, unsigned char byte_to_put, unsigned char *old_byte) {
     uint64_t data;
     unsigned char *converter;
+    int err = 0;
 
-    if ((data = ptrace(PTRACE_PEEKDATA, pid, address, 0)) == -1) {
-        printf("Could no read old opcode at: 0x%lx\n", address);
+    errno = NO_ERROR;
+    data = ptrace(PTRACE_PEEKDATA, pid, address, 0);
+    if (errno != NO_ERROR) {
+        err = errno;
+        printf("Could not read old opcode at: 0x%lx, errno: %d\n", address, err);
         return ERROR;
     }
 
     converter = (void*)&data;
-    opcode = *converter;
-    *converter = INT3;
+    *old_byte = *converter;
+    *converter = byte_to_put;
     
     if (-1 == ptrace(PTRACE_POKEDATA, pid, address, data)) {
-        printf("Could not set breakpoint at: 0x%lx", address);
-        return 1;
+        err = errno;
+        printf("Could not set breakpoint at: 0x%lx, errno: %d\n", address, err);
+        return ERROR;
+    }
+
+    return NO_ERROR;
+}
+
+status set_breakpoint(pid_t pid, uint64_t address) {
+    unsigned char opcode;
+    
+    if (FAIL(replace_byte(pid, address, INT3, &opcode))) {
+        printf("Could not place breakpoint!\n");
+        return ERROR;
     }
 
     breakpoint_t *new_breakpoint = malloc(sizeof(breakpoint_t));
@@ -72,15 +90,74 @@ status handle_breakpoint_command(char *cmd, pid_t pid) {
     return set_breakpoint(pid, address);
 }
 
+status continue_with_breakpoint(pid_t pid) {
+    unsigned char old_opcode;
+    unsigned char output;
+    int child_status;
+    uint64_t address = get_instruction_pointer(pid);
+    GList *breakpoints = g_breakpoints;
+    breakpoint_t *current_breakpoint;
+    
+
+    do {
+        current_breakpoint = breakpoints->data;
+        if (current_breakpoint->address == address) {
+            break;
+        }
+    } while ((breakpoints = g_list_next(breakpoints)) != NULL);
+    
+    if (breakpoints == NULL) {
+        printf("Couldn't find breakpoint at 0x%lx\n", address);
+        return ERROR;
+    }
+
+    // put back the old opcode, single step and place the breakpoint again.
+    old_opcode = current_breakpoint->opcode;
+    if (FAIL(replace_byte(pid, address, old_opcode, &output))) {
+        return ERROR;
+    }
+
+    if (-1 == ptrace(PTRACE_SINGLESTEP, pid, NULL, NULL)) {
+        return ERROR;
+    }
+
+    waitpid(pid, &child_status, 0);
+
+    if (FAIL(replace_byte(pid, address, INT3, &output))) {
+        return ERROR;
+    }
+
+    if (output != old_opcode) {
+        return ERROR;
+    }
+
+    return NO_ERROR;
+}
+
 status handle_continue_command(char *cmd, pid_t pid) {
     int child_status;
+    if (reached_breakpoint) {
+        // continue with breakpoint
+        if (FAIL(continue_with_breakpoint(pid))) {
+            printf("Error while reverting breakpoint, this may cause unexpected behaviour!\n");
+        }
+    }
+    
+    reached_breakpoint = FALSE;
     ptrace(PTRACE_CONT, pid, NULL, NULL);
     waitpid(pid, &child_status, 0);
+
     if (WIFEXITED(child_status)) {
         printf("child exited\n");
         return ERROR_SHOULD_EXIT;
     } else if (WIFSTOPPED(child_status)) {
-        printf("child stopped\n");
+        if (SIGTRAP == WSTOPSIG(child_status)) {
+            reached_breakpoint = TRUE;
+            decrement_instruction_pointer(pid);
+            printf("reached breakpoint at 0x%lx\n", get_instruction_pointer(pid));
+        } else {
+            printf("child stopped\n");
+        }
     } else {
         printf("status is: %d\n", child_status);
     }
