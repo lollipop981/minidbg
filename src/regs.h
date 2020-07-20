@@ -3,7 +3,9 @@
 
 #include <sys/types.h>
 
-int handle_regs_command(char *cmd, pid_t pid);
+#include "utils.h"
+
+status handle_regs_command(char *cmd, pid_t pid);
 u_int64_t get_instruction_pointer(pid_t pid);
 
 #endif // __REGS_H__

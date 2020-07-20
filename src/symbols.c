@@ -26,7 +26,7 @@ void syms_init(char *debugee) {
     }
 }
 
-int get_symbol_offset(char *symbol, unsigned long *offset) {
+status get_symbol_offset(char *symbol, unsigned long *offset) {
     Elf         *elf;
     Elf_Scn     *scn = NULL;
     GElf_Shdr   shdr;
@@ -34,12 +34,12 @@ int get_symbol_offset(char *symbol, unsigned long *offset) {
     int         fd, ii, count;
     GElf_Sym sym;
     char *symbol_name;
-    int ret = 0;
+    int ret = NO_ERROR;
     
     elf_version(EV_CURRENT);
 
     if (elf_path == NULL) {
-        ret = 1;
+        ret = ERROR;
         goto cleanup;
     }
 
@@ -56,7 +56,7 @@ int get_symbol_offset(char *symbol, unsigned long *offset) {
 
     // symbol table not found
     if (scn == NULL) {
-        ret = 1;
+        ret = ERROR;
         goto cleanup;
     }
 
@@ -80,25 +80,25 @@ cleanup:
     return ret;
 }
 
-int get_symbol_address(char *symbol, pid_t pid, uint64_t *address) {
+status get_symbol_address(char *symbol, pid_t pid, uint64_t *address) {
     uint64_t min_address = 0;
     uint64_t offset = 0;
 
-    if (get_symbol_offset(symbol, &offset)) {
+    if (FAIL(get_symbol_offset(symbol, &offset))) {
         printf("Error finding symbol in symbol table.\n");
-        return 1;
+        return ERROR;
     }
 
-    if (get_min_executable_address(pid, &min_address)) {
+    if (FAIL(get_min_executable_address(pid, &min_address))) {
         printf("Error getting min executable address.\n");
-        return 1;
+        return ERROR;
     }
 
     if (offset == 0 || min_address == 0) {
         printf("Error finding symbol\n");
-        return 1;
+        return ERROR;
     }
 
     *address = min_address + offset;
-    return 0;
+    return NO_ERROR;
 }

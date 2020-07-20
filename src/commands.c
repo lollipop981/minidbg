@@ -19,7 +19,7 @@ command_handler_t COMMAND_HANDLERS[] = {
 };
 size_t COMMAND_HANDLER_COUNT = sizeof(COMMAND_HANDLERS) / sizeof(command_handler_t);
 
-int handle_command(char *cmd, pid_t pid){
+status handle_command(char *cmd, pid_t pid){
     char *prefix = NULL;
     size_t len = 0;
 
@@ -43,17 +43,24 @@ int handle_command(char *cmd, pid_t pid){
 
 
     printf("Undefined command: \"%s\". Try \"help\"\n", cmd);
+    return ERROR;
 }
 
-int handle_help_command(char *cmd, pid_t pid) {
+status handle_help_command(char *cmd, pid_t pid) {
     command_handler_t *handler = NULL;
 
     for (int i = 0; i < COMMAND_HANDLER_COUNT; i++) {
         handler = &(COMMAND_HANDLERS[i]);
         printf("%s -- %s\n", handler->prefix, handler->help);
     }
+    return NO_ERROR;
 }
 
-int handle_shell_command(char *cmd, pid_t pid) {
-    system(cmd);
+status handle_shell_command(char *cmd, pid_t pid) {
+    status ret = system(cmd);
+    if (ret == ERROR) {
+        return ret;
+    }
+
+    return NO_ERROR;
 }

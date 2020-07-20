@@ -9,7 +9,7 @@
 
 unsigned char buffer[READ_BUFFER_SIZE + 1] = { 0 };
 
-int remote_memory_read(pid_t pid, long long unsigned address, size_t length, unsigned char *buffer, size_t buffer_size) {
+status remote_memory_read(pid_t pid, long long unsigned address, size_t length, unsigned char *buffer, size_t buffer_size) {
     int ret = 0;
     struct iovec local[1];
     struct iovec remote[1];
@@ -45,12 +45,12 @@ int remote_memory_read(pid_t pid, long long unsigned address, size_t length, uns
             break;
         }
 
-        return 1;
+        return ERROR;
     }
-    return 0;
+    return NO_ERROR;
 }
 
-int handle_memory_read_command(char *cmd, pid_t pid) {
+status handle_memory_read_command(char *cmd, pid_t pid) {
     int ret = 0;
     long long unsigned address = 0;
     size_t length = 0;
@@ -60,31 +60,32 @@ int handle_memory_read_command(char *cmd, pid_t pid) {
     ret = sscanf(cmd, "%llx %lu", &address, &length);
     if (ret != 2) {
         printf("Invalid input! Usage: mem {addr} {count}\n");
+        return ERROR;
     }
 
     if (length > READ_BUFFER_SIZE) {
         printf("Max allowed number of bytes to read is %u.\n", READ_BUFFER_SIZE);
+        return ERROR;
     }
 
-    ret = remote_memory_read(pid, address, length, buffer, READ_BUFFER_SIZE);
-    if (ret > 0) {
-        return 1;
+    if (FAIL(remote_memory_read(pid, address, length, buffer, READ_BUFFER_SIZE))) {
+        return ERROR;
     }
 
     hex_dump(buffer, length);   
-    return 0;   
+    return NO_ERROR;   
 }
 
-int handle_maps_command(char *cmd, pid_t pid) {
+status handle_maps_command(char *cmd, pid_t pid) {
     char file_name[25] = { 0 };
     FILE *fp;
-    int ret = 0;
+    int ret = NO_ERROR;
 
     sprintf(file_name, "/proc/%d/maps", pid);
     fp = fopen(file_name, "r");
     if (NULL == fp) {
         printf("Error opening %s!\n", file_name);
-        ret = 1;
+        ret = ERROR;
         goto cleanup;
     }
 
@@ -99,10 +100,10 @@ cleanup:
     return ret;
 }
 
-int get_min_executable_address(pid_t pid, long unsigned *address) {
+status get_min_executable_address(pid_t pid, long unsigned *address) {
     char file_name[25] = { 0 };
     FILE *fp;
-    int ret = 0;
+    int ret = NO_ERROR;
     long unsigned min_address = 0;
     long unsigned max_address = 0;
     char permissions[10] = { 0 };
@@ -116,7 +117,7 @@ int get_min_executable_address(pid_t pid, long unsigned *address) {
     fp = fopen(file_name, "r");
     if (NULL == fp) {
         printf("Error opening %s!\n", file_name);
-        ret = 1;
+        ret = ERROR;
         goto cleanup;
     }
 
@@ -125,12 +126,12 @@ int get_min_executable_address(pid_t pid, long unsigned *address) {
                 &min_address, &max_address, permissions, &offset, &dev_major, &dev_minor, &inode, exec_path);
         if (ret < 8) {
             printf("Error parsing %s\n", file_name);
-            ret = 1;
+            ret = ERROR;
             goto cleanup;
         } else if (strchr(permissions, 'x') != NULL) {
             // found executable address
             *address = min_address;
-            ret = 0;
+            ret = NO_ERROR;
             goto cleanup;
         }
         
@@ -138,7 +139,7 @@ int get_min_executable_address(pid_t pid, long unsigned *address) {
     } while (!feof(fp));
 
     // executable address not found.   
-    ret = 1;
+    ret = ERROR;
 
 cleanup:
     fclose(fp);

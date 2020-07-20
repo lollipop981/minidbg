@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "utils.h"
+
 #define INT3 ('\xcc')
 
 typedef struct breakpoint {
@@ -12,6 +14,6 @@ typedef struct breakpoint {
     int is_enabled;
 } breakpoint_t;
 
-int handle_breakpoint_command(char *cmd, pid_t pid);
+status handle_breakpoint_command(char *cmd, pid_t pid);
 
 #endif // __BREAKPIONTS_H__

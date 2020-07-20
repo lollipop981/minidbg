@@ -7,7 +7,7 @@
 #include "regs.h"
 #include "symbols.h"
 
-int disassemble_at_address(pid_t pid, uint64_t start_address) {
+status disassemble_at_address(pid_t pid, uint64_t start_address) {
     ZyanU8 memory[MEMORY_READ_SIZE] = { 0 };
     ZyanU64 current_address = 0;
     ZyanU64 runtime_address = 0;
@@ -19,9 +19,9 @@ int disassemble_at_address(pid_t pid, uint64_t start_address) {
     runtime_address = get_instruction_pointer(pid);
     current_address = start_address;
     
-    if (remote_memory_read(pid, current_address, MEMORY_READ_SIZE, memory, MEMORY_READ_SIZE)) {
+    if (FAIL(remote_memory_read(pid, current_address, MEMORY_READ_SIZE, memory, MEMORY_READ_SIZE))) {
         printf("Failed reading memory at address %lx\n", current_address);
-        return 1;
+        return ERROR;
     }
     
     // Initialize decoder context
@@ -53,10 +53,10 @@ int disassemble_at_address(pid_t pid, uint64_t start_address) {
         offset += instruction.length;
         current_address += instruction.length;
     }
-    return 0;
+    return NO_ERROR;
 }
 
-int handle_disassembly_command(char *cmd, pid_t pid) {
+status handle_disassembly_command(char *cmd, pid_t pid) {
     uint64_t disas_address = 0;
     
     if (*cmd == '\0') {
@@ -64,7 +64,7 @@ int handle_disassembly_command(char *cmd, pid_t pid) {
     } else if (sscanf(cmd, "0x%lx", &disas_address) != 1) {
         if (get_symbol_address(cmd, pid, &disas_address) != 0) {
             printf("Failed to parse symbol or address: %s\n", cmd);
-            return 1;
+            return ERROR;
         }
     }
 

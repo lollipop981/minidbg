@@ -7,10 +7,10 @@
 
 GList *g_breakpoints = NULL;
 
-int list_breakpoints() {
+status list_breakpoints() {
     if (g_breakpoints == NULL) {
         printf("No breakpoints!\n");
-        return 0;
+        return NO_ERROR;
     }
 
     unsigned counter = 0;
@@ -22,16 +22,17 @@ int list_breakpoints() {
         printf("br %u: 0x%lx opcode: %02X enabled: %u\n", counter, current->address, current->opcode, current->is_enabled);
     } while ((br = g_list_next(br)) != NULL);
     
+    return NO_ERROR;
 }
 
-int set_breakpoint(pid_t pid, uint64_t address) {
+status set_breakpoint(pid_t pid, uint64_t address) {
     unsigned char opcode;
     uint64_t data;
     unsigned char *converter;
 
     if ((data = ptrace(PTRACE_PEEKDATA, pid, address, 0)) == -1) {
         printf("Could no read old opcode at: 0x%lx\n", address);
-        return 1;
+        return ERROR;
     }
 
     converter = (void*)&data;
@@ -46,14 +47,14 @@ int set_breakpoint(pid_t pid, uint64_t address) {
     breakpoint_t *new_breakpoint = malloc(sizeof(breakpoint_t));
     if (new_breakpoint == NULL) {
         printf("Error allocating memory!\n");
-        return 1;
+        return ERROR;
     }
 
     new_breakpoint->address = address;
     new_breakpoint->opcode = opcode;
     new_breakpoint->is_enabled = 1;    
     g_breakpoints = g_list_append(g_breakpoints, new_breakpoint);
-    return 0;
+    return NO_ERROR;
 }
 
 int handle_breakpoint_command(char *cmd, pid_t pid) {
@@ -64,7 +65,7 @@ int handle_breakpoint_command(char *cmd, pid_t pid) {
     uint64_t address;
     if (sscanf(cmd, "0x%lx", &address) != 1) {
         printf("%s is not a valid address!\n", cmd);
-        return 1;
+        return ERROR;
     }
 
     return set_breakpoint(pid, address);
