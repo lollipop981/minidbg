@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <Zydis/Zydis.h>
+#include <string.h>
 
 #include "disassembly.h"
 #include "mem.h"
@@ -49,6 +50,11 @@ status disassemble_at_address(pid_t pid, uint64_t start_address) {
         ZydisFormatterFormatInstruction(&formatter, &instruction, buffer, sizeof(buffer),
             current_address);
         puts(buffer);
+
+        // reached the end of a function
+        if (strncmp(buffer, "ret", 3) == 0) {
+            break;
+        }
 
         offset += instruction.length;
         current_address += instruction.length;
