@@ -16,5 +16,6 @@ typedef struct breakpoint {
 
 status handle_breakpoint_command(char *cmd, pid_t pid);
 status handle_continue_command(char *cmd, pid_t pid);
+void remove_breakpoints_for_disassembly(uint64_t start_address, unsigned char *buffer, size_t length);
 
 #endif // __BREAKPIONTS_H__

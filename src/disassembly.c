@@ -7,6 +7,7 @@
 #include "mem.h"
 #include "regs.h"
 #include "symbols.h"
+#include "breakpoints.h"
 
 status disassemble_at_address(pid_t pid, uint64_t start_address) {
     ZyanU8 memory[MEMORY_READ_SIZE] = { 0 };
@@ -24,6 +25,8 @@ status disassemble_at_address(pid_t pid, uint64_t start_address) {
         printf("Failed reading memory at address %lx\n", current_address);
         return ERROR;
     }
+
+    remove_breakpoints_for_disassembly(start_address, memory, MEMORY_READ_SIZE);
     
     // Initialize decoder context
     ZydisDecoder decoder;

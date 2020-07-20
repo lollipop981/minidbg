@@ -165,3 +165,19 @@ status handle_continue_command(char *cmd, pid_t pid) {
 
     return NO_ERROR;
 }
+
+void remove_breakpoints_for_disassembly(uint64_t start_address, unsigned char *buffer, size_t length) {
+    uint64_t end_address = start_address + length;
+    GList *breakpoints = g_breakpoints;
+    breakpoint_t *current;
+
+    while (breakpoints != NULL) {
+        current = breakpoints->data;
+        if (start_address <= current->address && current->address <= end_address) {
+            buffer[current->address - start_address] = current->opcode;
+        }
+
+        breakpoints = g_list_next(breakpoints);
+    }
+
+}
