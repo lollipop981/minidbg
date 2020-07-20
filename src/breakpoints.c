@@ -1,6 +1,7 @@
 #include <glib.h>
 #include <stdio.h>
 #include <sys/ptrace.h>
+#include <sys/wait.h>
 
 #include "breakpoints.h"
 #include "mem.h"
@@ -57,7 +58,7 @@ status set_breakpoint(pid_t pid, uint64_t address) {
     return NO_ERROR;
 }
 
-int handle_breakpoint_command(char *cmd, pid_t pid) {
+status handle_breakpoint_command(char *cmd, pid_t pid) {
     if ('\0' == *cmd) {
         return list_breakpoints();
     }
@@ -69,4 +70,20 @@ int handle_breakpoint_command(char *cmd, pid_t pid) {
     }
 
     return set_breakpoint(pid, address);
+}
+
+status handle_continue_command(char *cmd, pid_t pid) {
+    int child_status;
+    ptrace(PTRACE_CONT, pid, NULL, NULL);
+    waitpid(pid, &child_status, 0);
+    if (WIFEXITED(child_status)) {
+        printf("child exited\n");
+        return ERROR_SHOULD_EXIT;
+    } else if (WIFSTOPPED(child_status)) {
+        printf("child stopped\n");
+    } else {
+        printf("status is: %d\n", child_status);
+    }
+
+    return NO_ERROR;
 }

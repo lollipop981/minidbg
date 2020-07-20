@@ -15,5 +15,6 @@ typedef struct breakpoint {
 } breakpoint_t;
 
 status handle_breakpoint_command(char *cmd, pid_t pid);
+status handle_continue_command(char *cmd, pid_t pid);
 
 #endif // __BREAKPIONTS_H__

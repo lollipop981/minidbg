@@ -31,15 +31,14 @@ int main(int argc, char** argv) {
 
         while (0 != strcmp("q\n", cmd)) {
             if (0 != strcmp("\n", cmd)) {
-                handle_command(cmd, child_pid);
+                if (ERROR_SHOULD_EXIT == handle_command(cmd, child_pid)) {
+                    break;
+                }
             }
             memset(cmd, '\0', CMD_SIZE);
             printf("rmdbg >>> ");
             fgets(cmd, CMD_SIZE, stdin);
 
         }
-
-        ptrace(PTRACE_CONT, child_pid, NULL, NULL);
-
     }
 }

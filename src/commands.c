@@ -16,6 +16,7 @@ command_handler_t COMMAND_HANDLERS[] = {
     {"maps", handle_maps_command, "Show memory maps of process as shown in /proc/{pid}/maps."},
     {"disas", handle_disassembly_command, "Show disassembly of code about to be executed."},
     {"br", handle_breakpoint_command, "Show all breakpoints or set a new breakpoint. Usage: breakpoint {address}."},
+    {"c", handle_continue_command, "Continue process execution."},
 };
 size_t COMMAND_HANDLER_COUNT = sizeof(COMMAND_HANDLERS) / sizeof(command_handler_t);
 
