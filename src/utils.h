@@ -5,6 +5,9 @@
 
 typedef int status;
 
+#define	FALSE	(0)
+#define	TRUE	(!FALSE)
+
 #define NO_ERROR (0)
 #define ERROR (-1)
 #define ERROR_SHOULD_EXIT (-2)
