@@ -51,6 +51,46 @@ status remote_memory_read(pid_t pid, long long unsigned address, size_t length, 
     return NO_ERROR;
 }
 
+status remote_memory_write(pid_t pid, long long unsigned address, unsigned char *buffer, size_t length) {
+    int ret = 0;
+    struct iovec local[1];
+    struct iovec remote[1];
+
+    local[0].iov_base = buffer;
+    local[0].iov_len = length;
+    remote[0].iov_base = (void *) address;
+    remote[0].iov_len = length;
+
+    ret = process_vm_writev(pid, local, 1, remote, 1, 0);
+    if (ret < 0) {
+        printf("Error! ");
+        switch (errno) {
+        case EFAULT:
+            printf("The memory is outside the accessible address space.\n");
+            /* code */
+            break;
+        case EINVAL:
+            printf("Invalid arguments for memory write.\n");
+            break;
+        case ENOMEM:
+            printf("Could not allocate memory for operation.\n");
+            break;
+        case EPERM:
+            printf("The caller does not have permission to access the address space of the process with pid %u.\n", pid);
+            break;
+        case ESRCH:
+            printf("No process with pid %u.\n", pid);
+            break;
+        default:
+            printf("Unexpected error!\n");
+            break;
+        }
+
+        return ERROR;
+    }
+    return NO_ERROR;
+}
+
 status handle_memory_read_command(char *cmd, pid_t pid) {
     int ret = 0;
     long long unsigned address = 0;
